@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="listOfStudyGroups">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element name="studyGroup" type="studyGroup" maxOccurs="unbounded"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xsd:complexType name="studyGroup">
+        <xsd:sequence>
+            <xsd:element name="id" type="xs:long"/>
+            <xsd:element name="name" type="xs:string"/>
+            <xsd:element name="coordinates" type="coordinates"/>
+            <xsd:element name="creationDate" type="xs:string"/>
+            <xsd:element name="studentsCount" type="xs:int"/>
+            <xsd:element name="formOfEducation" type="xs:string"/>
+            <xsd:element name="semesterEnum" type="xs:string"/>
+            <xsd:element name="groupAdmin" type="person"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="coordinates">
+        <xsd:sequence>
+            <xsd:element name="x" type="xs:int"/>
+            <xsd:element name="y" type="xs:double"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="null">
+
+    </xsd:complexType>
+
+    <xsd:complexType name="person">
+        <xsd:sequence>
+            <xsd:element name="name" type="xs:string"/>
+            <xsd:element name="weight" type="xs:float"/>
+            <xsd:element name="eyeColor" type="xs:string"/>
+            <xsd:element name="hairColor" type="xs:string"/>
+            <xsd:element name="location" type="location"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="location">
+        <xsd:sequence>
+            <xsd:element name="x" type="xs:long"/>
+            <xsd:element name="y" type="xs:int"/>
+            <xsd:element name="z" type="xs:int"/>
+            <xsd:element name="name" type="xs:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xs:schema>
