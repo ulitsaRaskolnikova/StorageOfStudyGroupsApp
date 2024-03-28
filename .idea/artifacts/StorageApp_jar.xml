@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="StorageApp:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/StorageApp_jar</output-path>
+    <root id="archive" name="StorageApp.jar">
+      <element id="module-output" name="StorageApp" />
+      <element id="library" level="application" name="lombok-1.18.30" />
+    </root>
+  </artifact>
+</component>
