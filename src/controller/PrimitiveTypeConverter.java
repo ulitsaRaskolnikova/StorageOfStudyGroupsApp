@@ -7,8 +7,10 @@ import model.data.utils.IdMaker;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static controller.enums.InputType.SCRIPT;
 import static java.lang.String.valueOf;
 
 /**
@@ -37,7 +39,7 @@ public class PrimitiveTypeConverter {
     public static <T> boolean isString(Class<T> cl){
         return cl.equals(String.class);
     }
-    public static <T> T convertObj(Class<T> objType, String obj, String name, String parentObjName) throws ReflectiveOperationException, WrongDataInputException {
+    public static <T> T convertObj(Class<T> objType, String obj, String name, String parentObjName) throws ReflectiveOperationException, WrongDataInputException, NoSuchElementException {
         while (!Handler.isValidData(obj, name, parentObjName)){
             switch (Respondent.getInputType()){
                 case VIEW:
@@ -45,8 +47,8 @@ public class PrimitiveTypeConverter {
                     Respondent.sendToOutput(name + ": ");
                     obj = Respondent.getInput();
                     break;
-                case XML_FILE:
-                    throw new WrongDataInputException(MessageType.WRONG_DATA_INPUT.getMessage() + " in " + name);
+                case XML_FILE, SCRIPT:
+                    throw new WrongDataInputException(MessageType.WRONG_DATA_INPUT.getMessage() + " \"" +obj + "\" in " + name);
             }
         }
         if (name.equals("id")){

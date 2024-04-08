@@ -32,10 +32,6 @@ public class XMLHandler {
         if (file.toString().equals("")){
             return new LinkedListStorage<StudyGroup>();
         }
-        Scanner scan = new Scanner(file);
-        if (!scan.nextLine().startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>")){
-            throw new WrongTagException("Invalid version tag");
-        }
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
         documentBuilder.setErrorHandler(new NullErrorHandler());

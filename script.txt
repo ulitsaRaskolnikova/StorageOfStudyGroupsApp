@@ -5,7 +5,6 @@ nfkds
 12
 12
 12
-execute_script script.txt
 DISTANCE_EDUCATION
 FIRST
 asndfkl

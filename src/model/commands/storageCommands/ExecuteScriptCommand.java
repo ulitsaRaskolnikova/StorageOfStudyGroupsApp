@@ -3,6 +3,7 @@ package model.commands.storageCommands;
 import controller.Controller;
 import controller.Respondent;
 import controller.enums.InputType;
+import controller.exceptions.WrongDataInputException;
 import fileSystem.ScriptHandler;
 import model.commands.Command;
 import model.interfaces.IStore;
@@ -10,6 +11,7 @@ import requests.interfaces.IRequestFileName;
 
 import java.io.FileNotFoundException;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.logging.FileHandler;
 
 public class ExecuteScriptCommand implements Command<IRequestFileName> {
@@ -21,7 +23,7 @@ public class ExecuteScriptCommand implements Command<IRequestFileName> {
     @Override
     public void execute(IRequestFileName request){
         if (files.contains(request.getFileName())){
-            Respondent.sendToOutput("The reсursion of files is detected.\n");
+            Respondent.sendToOutput("The recursion of files is detected.\n");
             Respondent.setInputType(InputType.VIEW);
             return;
         }
@@ -34,7 +36,15 @@ public class ExecuteScriptCommand implements Command<IRequestFileName> {
         files.add(request.getFileName());
         InputType lastInputType = Respondent.getInputType();
         Respondent.setInputType(InputType.SCRIPT);
-        Controller.executeCommands(storage, request.getCommandExecutor());
+        try{
+            Controller.executeCommands(storage, request.getCommandExecutor());
+        } catch(WrongDataInputException e){
+            Respondent.sendToOutput(e.getMessage() + "\n");
+            Respondent.setInputType(InputType.VIEW);
+            return;
+        } catch(NoSuchElementException e){
+            return;
+        }
         Respondent.setInputType(lastInputType);
         files.remove(request.getFileName());
     }

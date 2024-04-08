@@ -22,7 +22,7 @@ public class ScriptHandler {
     private static boolean isValidData = true;
     @Setter
     @Getter
-    private static String fileName = "....";//System.getenv("FILE_PATH");
+    private static String fileName = System.getenv("FILE_PATH");
     //"/Users/admin/IdeaProjects/SpringSemestrProg/src/fileSystem/StudyGroups.xml"
     public static void setScannerInput(String input) throws FileNotFoundException {
         File file = new File(input);

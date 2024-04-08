@@ -17,13 +17,10 @@ public class SaveCommand implements Command<Request> {
     @Override
     public void execute(Request request){
         if (!ScriptHandler.isValidData()){
-            Respondent.sendToOutput("You can't write this file because it contains valid data. Write other file name to save storage.\n");
+            Respondent.sendToOutput("You can't write to the file \"" + ScriptHandler.getFileName() + "\" because it contains valid data. Write other file name to save storage.\n");
             String input = Respondent.getInput();
-            if (ScriptHandler.getFileName().equals(input)){
-                execute(request);
-                return;
-            }
             ScriptHandler.setValidData(true);
+            ScriptHandler.setValidFileName(false);
             ScriptHandler.setFileName(input);
             execute(request);
             return;
@@ -38,31 +35,33 @@ public class SaveCommand implements Command<Request> {
                 ScriptHandler.setValidFileName(false);
                 execute(request);
             }
+            return;
         }
-        else{
-            if (!ScriptHandler.getFileName().matches("^(.+)\\/([^\\/]+)$\n")){
-                Respondent.sendToOutput("Wrong file name. Write new file name.\n");
-                String input = Respondent.getInput();
-                ScriptHandler.setFileName(input);
-                execute(request);
-                return;
-            }
-            Respondent.sendToOutput("Do you want to create file named \"" + ScriptHandler.getFileName() + "\"?\nPress enter if yes or write new file name.\n");
+        if (!ScriptHandler.getFileName().matches("\\w+(\\/\\w+)*(\\.\\w+)?")){
+            Respondent.sendToOutput("Wrong file name \"" + ScriptHandler.getFileName() + "\". Write new file name.\n");
             String input = Respondent.getInput();
-            if(input.equals("")){
-                try{
-                    ScriptHandler.writeFile(storage.getXMLString());
-                    Respondent.sendToOutput("Saved!\n");
-                }
-                catch(Exception e){
-                    Respondent.sendToOutput(e.getMessage() + "\n");
-                    ScriptHandler.setValidFileName(false);
-                    execute(request);
-                }
-                return;
-            }
+            ScriptHandler.setFileName(input);
+            execute(request);
+            return;
+        }
+
+        //Respondent.sendToOutput("Do you want to write information to the file named \"" + ScriptHandler.getFileName() + "\"?\nPress enter if yes or write new file name.\n");
+        //String input = Respondent.getInput();
+        //if(input.equals("")){
+        try{
+            ScriptHandler.writeFile(storage.getXMLString());
+            ScriptHandler.setValidFileName(true);
+            Respondent.sendToOutput("Saved!\n");
+        }
+        catch(Exception e){
+            Respondent.sendToOutput(e.getMessage() + "\n");
+            ScriptHandler.setValidFileName(false);
+            String input = Respondent.getInput();
             ScriptHandler.setFileName(input);
             execute(request);
         }
+        //return;
+        //}
+        //ScriptHandler.setFileName(input);
     }
 }

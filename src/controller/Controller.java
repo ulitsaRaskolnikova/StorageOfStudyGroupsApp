@@ -1,6 +1,8 @@
 package controller;
 
+import controller.enums.InputType;
 import controller.enums.MessageType;
+import controller.exceptions.WrongDataInputException;
 import controller.exceptions.WrongTagException;
 import fileSystem.ScriptHandler;
 import fileSystem.XMLHandler;
@@ -21,6 +23,7 @@ import view.ConsoleView;
 import javax.xml.parsers.ParserConfigurationException;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import static controller.enums.InputType.*;
 
@@ -36,10 +39,13 @@ public class Controller {
             storage = XMLHandler.getStorageFromXML();
             Respondent.sendToOutput("XML-file is parsed.\n");
         } catch (SAXException | WrongTagException e){
+            Respondent.sendToOutput(MessageType.PARSE_FAIL.getMessage() + "\n");
             Respondent.sendToOutput(e.getMessage() + "\n");
             ScriptHandler.setValidData(false);
             storage = new LinkedListStorage();
+
         } catch (Throwable e) {
+            Respondent.sendToOutput(MessageType.PARSE_FAIL.getMessage() + "\n");
             Respondent.sendToOutput(e.getMessage() + "\n");
             ScriptHandler.setValidFileName(false);
             if (ScriptHandler.getFileName() == null) ScriptHandler.setFileName("");
@@ -63,13 +69,22 @@ public class Controller {
                 new HistoryCommand()
         );
         Respondent.setInputType(VIEW);
-        executeCommands(storage, commandExecutor);
+        try{
+            executeCommands(storage, commandExecutor);
+        } catch(WrongDataInputException e){
+            Respondent.sendToOutput(e.getMessage() + "\n");
+        } catch(NoSuchElementException e){
+
+        }
     }
-    public static void executeCommands(IStore storage, CommandExecutor commandExecutor){
+    public static void executeCommands(IStore storage, CommandExecutor commandExecutor) throws WrongDataInputException, NoSuchElementException {
         boolean isExit = false;
         while(true){
             String input = Respondent.getInput();
             if (!Handler.isValidCommandInput(input)){
+                if (Respondent.getInputType() == SCRIPT){
+                    throw new WrongDataInputException("Invalid command \"" + input + "\".");
+                }
                 Respondent.sendToOutput(MessageType.WRONG_COMMAND_INPUT);
                 continue;
             }
@@ -89,8 +104,10 @@ public class Controller {
                     Element element = null;
                     try{
                         element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", "");
+                    } catch (WrongDataInputException | NoSuchElementException e){
+                        throw e;
                     } catch(Exception ex){
-                        Respondent.sendToOutput(ex.getMessage());
+                        Respondent.sendToOutput(ex.getMessage() + "\n");
                     }
                     Respondent.sendToOutput(StudyGroup.class.getSimpleName() + " is completed.\n");
                     switch(commandType){

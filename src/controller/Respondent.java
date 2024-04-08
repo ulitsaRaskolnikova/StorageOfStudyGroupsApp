@@ -9,6 +9,8 @@ import lombok.Setter;
 import view.ConsoleView;
 import view.View;
 
+import java.util.NoSuchElementException;
+
 /**
  * Respondent gets input from view, xml, script and updates view.
  */
@@ -28,7 +30,7 @@ public class Respondent {
     public static void setView(View view){
         Respondent.view = view;
     }
-    public static String getInput(){
+    public static String getInput() throws NoSuchElementException {
         return switch (inputType) {
             case VIEW -> view.getInput();
             case XML_FILE -> XMLHandler.getValue();
