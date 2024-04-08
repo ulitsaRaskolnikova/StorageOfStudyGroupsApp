@@ -11,6 +11,7 @@ import java.util.logging.FileHandler;
 
 public class SaveCommand implements Command<Request> {
     private final IStore storage;
+    private boolean isOriginFileName = true;
     public SaveCommand(IStore storage){
         this.storage = storage;
     }
@@ -44,10 +45,16 @@ public class SaveCommand implements Command<Request> {
             execute(request);
             return;
         }
-
-        //Respondent.sendToOutput("Do you want to write information to the file named \"" + ScriptHandler.getFileName() + "\"?\nPress enter if yes or write new file name.\n");
-        //String input = Respondent.getInput();
-        //if(input.equals("")){
+        if (isOriginFileName){
+            isOriginFileName = false;
+            Respondent.sendToOutput("Do you want to create and write information to the file named \"" + ScriptHandler.getFileName() + "\"?\nPress enter if yes or write new file name.\n");
+            String input = Respondent.getInput();
+            if(!input.equals("")){
+                ScriptHandler.setFileName(input);
+                execute(request);
+                return;
+            }
+        }
         try{
             ScriptHandler.writeFile(storage.getXMLString());
             ScriptHandler.setValidFileName(true);
