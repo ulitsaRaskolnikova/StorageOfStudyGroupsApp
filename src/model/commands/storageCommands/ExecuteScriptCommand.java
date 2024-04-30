@@ -42,7 +42,7 @@ public class ExecuteScriptCommand implements Command<IRequestFileName> {
             Respondent.sendToOutput(e.getMessage() + "\n");
             Respondent.setInputType(InputType.VIEW);
             return;
-        } catch(NoSuchElementException e){
+        } catch(Exception e){
             return;
         }
         Respondent.setInputType(lastInputType);

@@ -1,5 +1,6 @@
 show
 print_ascending
+execute_script script.txt
 add
 nfkds
 12

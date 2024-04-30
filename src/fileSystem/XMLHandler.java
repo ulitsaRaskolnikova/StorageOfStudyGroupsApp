@@ -12,6 +12,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -42,13 +43,10 @@ public class XMLHandler {
                 storage.add(ElementBuilderHelper.buildElement(StudyGroup.class, "studyGroup", ""));
             }
         }
-        //System.out.println(node);
         return storage;
     }
 
-
     public static Node getNextNode(){
-        //System.out.println(node);
         node = getNextNode(node);
         return node;
     }
@@ -78,17 +76,13 @@ public class XMLHandler {
         if ((nextNode.getNextSibling() == null && nextNode.getNodeType() != Node.ELEMENT_NODE) || (node.getNextSibling() == null && node.getNodeType() == Node.ELEMENT_NODE)){
             Node parNode;
             do{
-                //System.out.println(node);
                 parNode = node.getParentNode();
                 node = getElementSiblingNode(parNode);
-                //System.out.println(node + " " + getElementSiblingNode(node) + " " + node.getNextSibling() + " " + (nextNode.getNextSibling() == null && nextNode.getNodeType() != Node.ELEMENT_NODE) + " " + (node.getNextSibling() == null && node.getNodeType() == Node.ELEMENT_NODE) + " " + isLastSibling(node, getElementSiblingNode(node)));
             } while ((parNode.equals(node) && node.getNodeType() == Node.ELEMENT_NODE) || (node.getNextSibling() == null && node.getNodeType() != Node.ELEMENT_NODE));
-            //System.out.println(node + " " + node.getNextSibling());
             return node;
         }
         node = nextNode;
         return node;
-        //System.out.println(node);
     }
 
 }

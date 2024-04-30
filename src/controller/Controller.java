@@ -1,6 +1,5 @@
 package controller;
 
-import controller.enums.InputType;
 import controller.enums.MessageType;
 import controller.exceptions.WrongDataInputException;
 import controller.exceptions.WrongTagException;
@@ -19,11 +18,6 @@ import org.xml.sax.SAXException;
 import requests.*;
 import requests.interfaces.Request;
 import view.ConsoleView;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import java.io.IOException;
-import java.util.NoSuchElementException;
 
 import static controller.enums.InputType.*;
 
@@ -71,13 +65,11 @@ public class Controller {
         Respondent.setInputType(VIEW);
         try{
             executeCommands(storage, commandExecutor);
-        } catch(WrongDataInputException e){
+        } catch(Exception e){
             Respondent.sendToOutput(e.getMessage() + "\n");
-        } catch(NoSuchElementException e){
-
         }
     }
-    public static void executeCommands(IStore storage, CommandExecutor commandExecutor) throws WrongDataInputException, NoSuchElementException {
+    public static void executeCommands(IStore storage, CommandExecutor commandExecutor) throws Exception{
         boolean isExit = false;
         while(true){
             String input = Respondent.getInput();
@@ -101,14 +93,7 @@ public class Controller {
                         continue;
                     }
                     if (Respondent.getInputType() == VIEW) Respondent.sendToOutput(StudyGroup.class.getSimpleName() + ":\n");
-                    Element element = null;
-                    try{
-                        element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", null);
-                    } catch (WrongDataInputException | NoSuchElementException e){
-                        throw e;
-                    } catch(Exception ex){
-                        Respondent.sendToOutput(ex.getMessage() + "\n");
-                    }
+                    Element element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", null);
                     Respondent.sendToOutput(StudyGroup.class.getSimpleName() + " is completed.\n");
                     switch(commandType){
                         case UPDATE:
@@ -133,11 +118,11 @@ public class Controller {
                 case REMOVE_ANY_BY_FORM_OF_EDUCATION:
                     request = new RequestFormOfEducation(commandType, Handler.parseFormOfEducation(input));
                     break;
-                case EXIT:
-                    isExit = true;
-                    break;
                 case EXECUTE_SCRIPT:
                     request = new RequestFileName(commandType, Handler.parseScriptName(input), commandExecutor);
+                    break;
+                case EXIT:
+                    isExit = true;
                     break;
             }
             if (isExit) break;
@@ -145,5 +130,4 @@ public class Controller {
             commandExecutor.getHistory().add(commandType);
         }
     }
-
 }

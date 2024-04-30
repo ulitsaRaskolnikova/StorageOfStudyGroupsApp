@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import static controller.enums.InputType.SCRIPT;
-import static java.lang.String.valueOf;
-
 /**
  * PrimitiveTypeConverter converts primitive types.
  */

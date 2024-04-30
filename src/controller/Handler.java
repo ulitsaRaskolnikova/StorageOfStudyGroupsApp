@@ -1,28 +1,13 @@
 package controller;
 
-import fileSystem.ScriptHandler;
 import model.commands.CommandType;
-import model.data.enums.EyeColor;
 import model.data.enums.FormOfEducation;
-import model.data.enums.HairColor;
-import model.data.enums.Semester;
 import model.data.validation.*;
-import requests.RequestFormOfEducation;
-import requests.RequestId;
-import requests.RequestIndexElement;
-import requests.RequestOnlyCommand;
-import requests.interfaces.Request;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * Handler validate input and parse commands and fields.
@@ -105,27 +90,14 @@ public class Handler {
         }
         return input.equals("0");
     }
-    public static boolean isSemesterEnum(String input){
-        return Arrays.stream(Semester.values()).anyMatch(element -> Objects.equals(input.strip(), element.toString()));
-    }
-    public static boolean isEyeColor(String input){
-        return Arrays.stream(EyeColor.values()).anyMatch(element -> Objects.equals(input.strip(), element.toString()));
-    }
-    public static boolean isHairColor(String input){
-        return Arrays.stream(HairColor.values()).anyMatch(element -> Objects.equals(input.strip(), element.toString()));
-    }
     public static boolean isCommand(String input){
         return Arrays.stream(CommandType.values()).anyMatch(element -> Objects.equals(input.strip(), element.getName()));
-    }
-    public static boolean isLocalDate(String input){
-        Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
-        return DATE_PATTERN.matcher(input).matches();
     }
     public static <T> boolean isValidData(String input, String name, T parent) throws NoSuchFieldException {
         Field field = parent.getClass().getDeclaredField(name);
         if (field.isAnnotationPresent(NotNull.class) && input.isEmpty()) return false;
         try{
-            Object obj = PrimitiveTypeConverter.castObject(field.getType(), input);
+            PrimitiveTypeConverter.castObject(field.getType(), input);
         } catch (Throwable e){
             return false;
         }
