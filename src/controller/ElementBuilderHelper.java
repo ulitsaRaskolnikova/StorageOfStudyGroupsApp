@@ -18,12 +18,10 @@ import java.util.Arrays;
  */
 
 public class ElementBuilderHelper {
-    public static <T> T buildElement(Class<T> cl, String name, String parentObjName) throws WrongDataInputException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, ReflectiveOperationException, WrongTagException {
+    public static <T, E> T buildElement(Class<T> cl, String name, E parent) throws WrongDataInputException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, ReflectiveOperationException, WrongTagException {
         Node node;
-        //System.out.println(tag + " " + name);
         if (Respondent.getInputType() == InputType.XML_FILE){
             node = XMLHandler.getNextNode();
-            //System.out.println(node + " " + node.getNodeName() + " " + name);
             if (!node.getNodeName().equals(name)) throw new WrongTagException(MessageType.INVALID_XML_TAG.getMessage() + " " + node.getNodeName());
             if (name.equals("groupAdmin") && node.getTextContent().equals("")){
                 return null;
@@ -34,10 +32,8 @@ public class ElementBuilderHelper {
             if (cl.isEnum()){
                 input = input.toUpperCase();
             }
-            //System.out.println(name + " " + input);
-            return PrimitiveTypeConverter.convertObj(cl, input, name, parentObjName);
+            return PrimitiveTypeConverter.convertObj(cl, input, name, parent);
         }
-        //System.out.println(name + " " + XMLParser.getNode().getNodeName() + " " + XMLParser.getNode().getChildNodes().getLength())
 
         Field[] fields = cl.getDeclaredFields();
         T obj = cl.getConstructor().newInstance();
@@ -61,7 +57,7 @@ public class ElementBuilderHelper {
                     isSkip = true;
                 }
             }
-            if (!isSkip) method.invoke(obj, buildElement(field.getType(), field.getName(), cl.getSimpleName()));
+            if (!isSkip) method.invoke(obj, buildElement(field.getType(), field.getName(), obj));
         }
         return obj;
     }

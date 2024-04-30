@@ -39,8 +39,8 @@ public class PrimitiveTypeConverter {
     public static <T> boolean isString(Class<T> cl){
         return cl.equals(String.class);
     }
-    public static <T> T convertObj(Class<T> objType, String obj, String name, String parentObjName) throws ReflectiveOperationException, WrongDataInputException, NoSuchElementException {
-        while (!Handler.isValidData(obj, name, parentObjName)){
+    public static <T, E> T convertObj(Class<T> objType, String obj, String name, E parent) throws ReflectiveOperationException, WrongDataInputException, NoSuchElementException {
+        while (!Handler.isValidData(obj, name, parent)){
             switch (Respondent.getInputType()){
                 case VIEW:
                     Respondent.sendToOutput(MessageType.WRONG_DATA_INPUT.getMessage() + " in " + name + "\n");
@@ -54,16 +54,19 @@ public class PrimitiveTypeConverter {
         if (name.equals("id")){
             IdMaker.setId(Math.max(IdMaker.getCurrentId(), Long.parseLong(obj)));
         }
+        return castObject(objType, obj);
+    }
+    public static <T> T castObject(Class<T> objType, String obj){
         switch (objType.getSimpleName()){
-            case "Integer", "int": return (T) Integer.valueOf(obj);
-            case "Long", "long": return (T) Long.valueOf(obj);
-            case "Double", "double": return (T) Double.valueOf(obj);
-            case "Float", "float": return (T) Float.valueOf(obj);
+            case "Integer", "int": return (T) Integer.valueOf(obj.strip());
+            case "Long", "long": return (T) Long.valueOf(obj.strip());
+            case "Double", "double": return (T) Double.valueOf(obj.strip());
+            case "Float", "float": return (T) Float.valueOf(obj.strip());
             case "String": return Objects.equals(obj, "") ? null : (T) obj;
-            case "LocalDate": return (T) LocalDate.parse(obj);
+            case "LocalDate": return (T) LocalDate.parse(obj.strip());
         }
         if (objType.isEnum()){
-            return Objects.equals(obj, "") ? null : (T) Enum.valueOf((Class<Enum>) objType, obj);
+            return Objects.equals(obj, "") ? null : (T) Enum.valueOf((Class<Enum>) objType, obj.strip().toUpperCase());
         }
         return null;
     }

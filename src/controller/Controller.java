@@ -103,7 +103,7 @@ public class Controller {
                     if (Respondent.getInputType() == VIEW) Respondent.sendToOutput(StudyGroup.class.getSimpleName() + ":\n");
                     Element element = null;
                     try{
-                        element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", "");
+                        element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", null);
                     } catch (WrongDataInputException | NoSuchElementException e){
                         throw e;
                     } catch(Exception ex){

@@ -6,6 +6,7 @@ import model.data.enums.EyeColor;
 import model.data.enums.FormOfEducation;
 import model.data.enums.HairColor;
 import model.data.enums.Semester;
+import model.data.validation.*;
 import requests.RequestFormOfEducation;
 import requests.RequestId;
 import requests.RequestIndexElement;
@@ -15,6 +16,7 @@ import requests.interfaces.Request;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -119,56 +121,35 @@ public class Handler {
         Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
         return DATE_PATTERN.matcher(input).matches();
     }
-    public static boolean isValidData(String input, String name, String parentObjName){
-        boolean isValid = false;
-        //System.out.println(parentObjName);
-        //System.out.println(name + " " + input);
-        switch (parentObjName){
-            case "StudyGroup":
-                switch (name){
-                    case "id": return isId(input);
-                    case "creationDate": return isLocalDate(input);
-                    case "name": return !Objects.equals(input, "");
-                    case "studentsCount": return isId(input) || Objects.equals(input, maxIntStr);
-                    case "formOfEducation": return Objects.equals(input, "") || isFormOfEducation(input);
-                    case "semesterEnum": return isSemesterEnum(input);
-                }
-                return false;
-            case "Coordinates":
-                switch (name){
-                    case "x": return isCoordinatesX(input);
-                    case "y":
-                        try{
-                            Double.parseDouble(input);
-                        } catch(NumberFormatException e){
-                            return false;
-                        }
-                        return true;
-                }
-                return false;
-            case "Person":
-                switch (name){
-                    case "name": return !Objects.equals(input, "");
-                    case "weight":
-                        try{
-                            Float num = Float.parseFloat(input);
-                            return Float.compare(num, 0) > 0;
-                        } catch(NumberFormatException e){
-                            return false;
-                        }
-                    case "eyeColor": return Objects.equals(input, "") || isEyeColor(input);
-                    case "hairColor": return isHairColor(input);
-                }
-                return false;
-            case "Location":
-                switch (name){
-                    case "x": return isLong(input);
-                    case "y": return isInteger(input);
-                    case "z": return isInteger(input);
-                    case "name": return input.length() <= 454;
-                }
-
+    public static <T> boolean isValidData(String input, String name, T parent) throws NoSuchFieldException {
+        Field field = parent.getClass().getDeclaredField(name);
+        if (field.isAnnotationPresent(NotNull.class) && input.isEmpty()) return false;
+        try{
+            Object obj = PrimitiveTypeConverter.castObject(field.getType(), input);
+        } catch (Throwable e){
+            return false;
+        }
+        double d;
+        if (field.isAnnotationPresent(Min.class)) {
+            if (getLongObj(field, input) < field.getAnnotation(Min.class).value()) return false;
+        }
+        if (field.isAnnotationPresent(Max.class)){
+            if (getLongObj(field, input) > field.getAnnotation(Max.class).value()) return false;
+        }
+        if (field.isAnnotationPresent(LowerLimit.class)){
+            d = Double.valueOf(input);
+            if (Double.compare(d, field.getAnnotation(LowerLimit.class).value()) <= 0) return false;
+        }
+        if (field.isAnnotationPresent(UpperLimit.class)){
+            d = Double.valueOf(input);
+            if (Double.compare(d, field.getAnnotation(UpperLimit.class).value()) >= 0) return false;
         }
         return true;
+    }
+    public static long getLongObj(Field field, String input){
+        if (field.getType().equals(String.class)){
+            return Long.valueOf(input.length());
+        }
+        return Long.parseLong(input.strip());
     }
 }

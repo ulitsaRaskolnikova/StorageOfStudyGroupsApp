@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.ToString;
 import model.data.interfaces.XMLString;
 import model.data.utils.InputField;
+import model.data.validation.Max;
+import model.data.validation.UpperLimit;
 
 import java.awt.*;
 
@@ -14,6 +16,7 @@ import java.awt.*;
 @ToString
 public class Coordinates implements Comparable<Coordinates>, XMLString {
     @InputField
+    @Max(value = 724)
     private int x; //Максимальное значение поля: 724
     @InputField
     private double y;

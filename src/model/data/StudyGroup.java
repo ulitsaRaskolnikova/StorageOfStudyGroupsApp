@@ -1,13 +1,14 @@
 package model.data;
 
 import lombok.*;
-import lombok.NonNull;
 import model.data.enums.FormOfEducation;
 import model.data.enums.Semester;
 import model.data.interfaces.Element;
 import model.data.interfaces.IHaveId;
 import model.data.utils.IdMaker;
 import model.data.utils.InputField;
+import model.data.validation.Min;
+import model.data.validation.NotNull;
 
 import java.time.LocalDate;
 
@@ -18,27 +19,30 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class StudyGroup implements Element, IHaveId, Comparable<StudyGroup> {
-    {
-        id = IdMaker.getId();
-        creationDate = LocalDate.now();
-    }
-    public void setId(Long id){
-        this.id = id;
-    }
-    private Long id; //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
+    @Min(value = 1)
+    @NotNull
+    private Long id = IdMaker.getId(); //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     @InputField
+    @NotNull
     private String name; //Поле не может быть null, Строка не может быть пустой
     @InputField
+    @NotNull
     private Coordinates coordinates; //Поле не может быть null
-    private LocalDate creationDate; //поле не может быть null, Значение этого поля должно генерироваться автоматически
+    @NotNull
+    private LocalDate creationDate = LocalDate.now(); //поле не может быть null, Значение этого поля должно генерироваться автоматически
     @InputField
+    @Min(value = 1)
     private int studentsCount; //Значение поля должно быть больше 0
     @InputField
     private FormOfEducation formOfEducation; //Поле может быть null
     @InputField
+    @NotNull
     private Semester semesterEnum; //Поле не может быть null
     @InputField
     private Person groupAdmin; //Поле может быть null
+    public void setId(Long id){
+        this.id = id;
+    }
     @Override
     public int compareTo(StudyGroup studyGroup){
         return Long.compare(id, studyGroup.getId());
