@@ -1,4 +1,4 @@
-package client.controller.commands;
+package client.commands;
 
 import commonData.commandData.Command;
 import commonData.commandData.CommandType;

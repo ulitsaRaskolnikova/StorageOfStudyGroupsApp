@@ -12,11 +12,14 @@ public class RemoveFormOfEducationCommand implements Command<IRequestFormOfEduca
     }
     @Override
     public String execute(IRequestFormOfEducation request){
-        storage.removeAnyByFormOfEducation(request.getFormOfEducation());
+        try {
+            storage.removeAnyByFormOfEducation(request.getFormOfEducation(), request.getLogin());
+        } catch(Exception e){
+            return e.getMessage();
+        }
         if (!storage.getSuccess()){
             return MessageType.NO_SUCH_FORM_OF_EDUCATION.getMessage();
-        }
-        else{
+        } else {
             return "The element is deleted.";
         }
     }

@@ -14,6 +14,6 @@ public class DoesIdExistsCommand implements Command<IRequestId> {
     }
     @Override
     public String execute(IRequestId request){
-        return storage.checkId(request.getId()) ? "true" : "false";
+        return storage.checkId(request.getId(), request.getLogin()) ? "true" : "You haven't created element with such id";
     }
 }

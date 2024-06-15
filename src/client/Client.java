@@ -1,4 +1,4 @@
-package client.controller;
+package client;
 
 import commonData.commandData.CommandType;
 import commonData.modelHandlers.Respondent;
@@ -32,8 +32,8 @@ public class Client {
         String message = "";
         while (true) {
             try {
-                //socket = new Socket("192.168.10.80", port);
-                socket = new Socket("localhost", port);
+                socket = new Socket("192.168.10.80", port);
+                //socket = new Socket("localhost", port);
                 break;
             } catch (Exception e){
                 if (!message.equals(e.getMessage())){

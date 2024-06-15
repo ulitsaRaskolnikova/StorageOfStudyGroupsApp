@@ -28,6 +28,7 @@ public class StudyGroup implements Element, IHaveId, Comparable<StudyGroup>, Ser
     private Long id = IdMaker.getId(); //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     @InputField
     @NotNull
+
     private String name; //Поле не может быть null, Строка не может быть пустой
     @InputField
     @NotNull
@@ -44,6 +45,7 @@ public class StudyGroup implements Element, IHaveId, Comparable<StudyGroup>, Ser
     private Semester semesterEnum; //Поле не может быть null
     @InputField
     private Person groupAdmin; //Поле может быть null
+    private String user;
     public void setId(Long id){
         this.id = id;
     }
@@ -54,14 +56,15 @@ public class StudyGroup implements Element, IHaveId, Comparable<StudyGroup>, Ser
     @Override
     public String toString(){
         return getClass().getName()
-                + "[id=" + id
+                + "{id=" + id
                 + ",name=" + name
                 + ",coordinates=" + coordinates
                 + ",creationDate=" + creationDate
                 + ",studentCount=" + studentsCount
                 + ",formOfEducation=" + formOfEducation
                 + ",semesterEnum=" + semesterEnum
-                + ",groupAdmin=" + groupAdmin + "]";
+                + ",groupAdmin=" + groupAdmin
+                + ",user=" + user + "}";
     }
 
     @Override
@@ -99,6 +102,7 @@ public class StudyGroup implements Element, IHaveId, Comparable<StudyGroup>, Ser
                 "<formOfEducation>" + (formOfEducation == null ? "" : formOfEducation) + "</formOfEducation>" +
                 "<semesterEnum>" + semesterEnum + "</semesterEnum>" +
                 (groupAdmin == null ? "<groupAdmin></groupAdmin>" : groupAdmin.toXMLString()) +
+                "<user>" + user + "</user>" +
                 "</studyGroup>";
     }
 }

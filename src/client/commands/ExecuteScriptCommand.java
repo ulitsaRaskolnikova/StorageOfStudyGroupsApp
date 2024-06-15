@@ -1,7 +1,8 @@
-package client.controller.commands;
+package client.commands;
 
-import client.controller.Client;
-import client.controller.ClientController;
+import client.Authorization;
+import client.Client;
+import client.ClientController;
 import commonData.modelHandlers.Respondent;
 import commonData.enums.InputType;
 import commonData.exceptions.WrongDataInputException;
@@ -15,6 +16,7 @@ public class ExecuteScriptCommand {
     public void execute(
             String fileName,
             Client client,
+            Authorization authorization,
             ExecuteScriptCommand executeScriptCommand,
             HelpCommand helpCommand,
             HistoryCommand historyCommand
@@ -36,6 +38,7 @@ public class ExecuteScriptCommand {
         try{
             ClientController.executeCommands(
                     client,
+                    authorization,
                     executeScriptCommand,
                     helpCommand,
                     historyCommand

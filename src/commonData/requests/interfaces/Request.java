@@ -8,5 +8,7 @@ import commonData.commandData.CommandType;
 
 public interface Request {
     void setCommandType(CommandType commandType);
+    void setLogin(String login);
+    String getLogin();
     CommandType getCommandType();
 }

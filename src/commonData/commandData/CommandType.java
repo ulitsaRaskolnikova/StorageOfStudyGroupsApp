@@ -23,7 +23,9 @@ public enum CommandType {
     @UtilCommand
     CHECK_IS_INDEX_IN_RANGE("check_is_index_in_range", "check_is_index_in_range : checks index is in range"),
     @UtilCommand
-    CHECK_ID_EXISTS("check_id_exists", "check_id_exists : checks id exists");
+    CHECK_ID_EXISTS("check_id_exists", "check_id_exists : checks id exists"),
+    @UtilCommand
+    CHECK_USER_INFO("check_user_info", "check_user_info : checks user's login and password");
     private final String name;
     private final String description;
     private CommandType(String name, String description){

@@ -11,7 +11,11 @@ public class ClearCommand implements Command<Request> {
     }
     @Override
     public String execute(Request request){
-        storage.clear();
+        try {
+            storage.clear(request.getLogin());
+        } catch (Exception e){
+            return e.getMessage();
+        }
         return "The storage is clear.";
     }
 }

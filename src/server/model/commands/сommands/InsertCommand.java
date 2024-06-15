@@ -11,7 +11,11 @@ public class InsertCommand implements Command<IRequestIndexElement> {
     }
     @Override
     public String execute(IRequestIndexElement request){
-        storage.insert(request.getIndex(), request.getElement());
+        try {
+            storage.insert(request.getIndex(), request.getElement());
+        } catch (Exception e){
+            return e.getMessage();
+        }
         return "The element is inserted.";
     }
 }

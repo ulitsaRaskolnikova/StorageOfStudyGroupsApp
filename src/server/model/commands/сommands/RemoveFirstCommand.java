@@ -11,7 +11,11 @@ public class RemoveFirstCommand implements Command<Request> {
     }
     @Override
     public String execute(Request request){
-        storage.removeFirst();
+        try {
+            storage.removeFirst(request.getLogin());
+        } catch (Exception e){
+            return e.getMessage();
+        }
         return "The first element is removed.";
     }
 }

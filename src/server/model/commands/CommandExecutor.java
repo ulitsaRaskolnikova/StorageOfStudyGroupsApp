@@ -26,6 +26,7 @@ public class CommandExecutor {
     private Command isIdxInRange;
     private Command doesIdExists;
     private Command exit;
+    private Command checkUserInfo;
     public CommandExecutor(
             Command add,
             Command info,
@@ -40,7 +41,8 @@ public class CommandExecutor {
             Command update,
             Command isIdxInRange,
             Command doesIdExists,
-            Command exit
+            Command exit,
+            Command checkUserInfo
     ){
         this.add = add;
         this.info = info;
@@ -56,6 +58,7 @@ public class CommandExecutor {
         this.isIdxInRange = isIdxInRange;
         this.doesIdExists = doesIdExists;
         this.exit = exit;
+        this.checkUserInfo = checkUserInfo;
     }
     private final HashMap<CommandType, Callable<String>> map = new HashMap<>(){
         {
@@ -73,6 +76,7 @@ public class CommandExecutor {
             put(CommandType.CHECK_IS_INDEX_IN_RANGE, () -> isIdxInRange.execute(request));
             put(CommandType.CHECK_ID_EXISTS, () -> doesIdExists.execute(request));
             put(CommandType.EXIT, () -> exit.execute(request));
+            put(CommandType.CHECK_USER_INFO, () -> checkUserInfo.execute(request));
         }
     };
     public String executeCommand(Request request){

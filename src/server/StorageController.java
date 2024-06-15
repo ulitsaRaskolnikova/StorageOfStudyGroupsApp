@@ -1,5 +1,6 @@
 package server;
 
+import commonData.data.StudyGroup;
 import commonData.view.ConsoleView;
 import commonData.modelHandlers.Respondent;
 import commonData.enums.InputType;
@@ -13,17 +14,31 @@ import server.model.commands.CommandExecutor;
 import server.model.commands.сommands.*;
 import server.model.interfaces.IStore;
 
+import java.sql.SQLException;
+
 public class StorageController {
     IStore storage;
     CommandExecutor commandExecutor;
     public String executeCommand(Request request){
         return commandExecutor.executeCommand(request);
     }
-    private StorageController(IStore storage, CommandExecutor commandExecutor){
+    private StorageController(IStore storage, CommandExecutor commandExecutor) {
         this.storage = storage;
         this.commandExecutor = commandExecutor;
     }
-    public static StorageController init(){
+    public static StorageController initDB(SQLController sqlController){
+        IStore storage;
+        try {
+            storage = sqlController.getData();
+        } catch (SQLException e) {
+            storage = new LinkedListStorage<StudyGroup>();
+            //log
+            System.out.println(e.getMessage());
+        }
+        var commandExecutor = initCommandExecutor(storage, sqlController);
+        return new StorageController(storage, commandExecutor);
+    }
+    public static StorageController initXML(SQLController sqlController){
         IStore storage;
         Respondent.setView(new ConsoleView());
         ScriptHandler.setFileName("StudyGroups.xml");
@@ -32,23 +47,22 @@ public class StorageController {
             storage = XMLHandler.getStorageFromXML();
             Respondent.sendToOutput("XML-file is parsed.");
         } catch (SAXException | WrongTagException e) {
-            //System.out.println(e.getMessage());
-            //Respondent.sendToOutput(MessageType.PARSE_FAIL.getMessage() + "\n");
-            //Respondent.sendToOutput(e.getMessage() + "\n");
             // log
             Server.getLogger().info(e.getMessage());
             ScriptHandler.setValidData(false);
             storage = new LinkedListStorage();
         } catch (Throwable e) {
             Server.getLogger().info(e.getMessage());
-            //Respondent.sendToOutput(MessageType.PARSE_FAIL.getMessage() + "\n");
-            //Respondent.sendToOutput(e.getMessage() + "\n");
             // log
             ScriptHandler.setValidFileName(false);
             if (ScriptHandler.getFileName() == null) ScriptHandler.setFileName("");
             storage = new LinkedListStorage();
         }
         System.out.println(storage);
+        var commandExecutor = initCommandExecutor(storage, sqlController);
+        return new StorageController(storage, commandExecutor);
+    }
+    private static CommandExecutor initCommandExecutor(IStore storage, SQLController sqlController){
         CommandExecutor commandExecutor = new CommandExecutor(
                 new AddCommand(storage),
                 new InfoCommand(storage),
@@ -63,8 +77,9 @@ public class StorageController {
                 new UpdateCommand(storage),
                 new IsIdxInRangeCommand(storage),
                 new DoesIdExistsCommand(storage),
-                new ExitCommand(storage)
+                new ExitCommand(storage),
+                new CheckUserInfoCommand(sqlController)
         );
-        return new StorageController(storage, commandExecutor);
+        return commandExecutor;
     }
 }

@@ -1,8 +1,8 @@
-package client.controller;
+package client;
 
-import client.controller.commands.ExecuteScriptCommand;
-import client.controller.commands.HelpCommand;
-import client.controller.commands.HistoryCommand;
+import client.commands.ExecuteScriptCommand;
+import client.commands.HelpCommand;
+import client.commands.HistoryCommand;
 import commonData.enums.MessageType;
 import commonData.exceptions.WrongDataInputException;
 import commonData.modelHandlers.ElementBuilderHelper;
@@ -16,7 +16,6 @@ import commonData.requests.interfaces.Request;
 import commonData.view.ConsoleView;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
 
 import static commonData.enums.InputType.*;
 
@@ -28,24 +27,23 @@ public class ClientController {
         Respondent.setInputType(VIEW);
         Respondent.setView(new ConsoleView());
 
-        Respondent.sendToOutputWithoutLN("Write port: ");
-        int port = 55555;
-        try{
-            port = Integer.parseInt(Respondent.getInput());
-            if (port < 3000 || port >= 65536){
-                throw new IOException();
-            }
-        } catch (Throwable e){
-            Respondent.sendToOutput(e.getMessage());
-            Respondent.sendToOutput("Try again");
-            main(new String[]{});
-            return;
-        }
+        int port = getPort();
         Client client = new Client();
         client.setPort(port);
+
+        String ans;
+        Authorization authorization = new Authorization();
+        do {
+            authorization.getAuthorizationTypeByUser();
+            authorization.authorize();
+            ans = authorization.checkUserInfo(client);
+            Respondent.sendToOutput(ans);
+        } while (!ans.equals("Success!"));
+
         try{
             executeCommands(
                     client,
+                    authorization,
                     new ExecuteScriptCommand(),
                     new HelpCommand(),
                     new HistoryCommand()
@@ -54,8 +52,23 @@ public class ClientController {
             Respondent.sendToOutput(e.getMessage() + "\n");
         }
     }
+    private static int getPort(){
+        while (true) {
+            Respondent.sendToOutputWithoutLN("Write port: ");
+            try {
+                int port = Integer.parseInt(Respondent.getInput());
+                if (port < 3000 || port >= 65536) {
+                    throw new IOException();
+                }
+                return port;
+            } catch (Throwable e) {
+                Respondent.sendToOutput("Try again");
+            }
+        }
+    }
     public static void executeCommands(
             Client client,
+            Authorization authorization,
             ExecuteScriptCommand executeScriptCommand,
             HelpCommand helpCommand,
             HistoryCommand historyCommand
@@ -77,21 +90,26 @@ public class ClientController {
             switch(commandType) {
                 case UPDATE, INSERT_AT, ADD:
                     if (commandType == CommandType.INSERT_AT){
-                        String ans = client.dispatch(new RequestId(CommandType.CHECK_IS_INDEX_IN_RANGE, Handler.parseId(input)));
+                        Request requestCheck = new RequestId(CommandType.CHECK_IS_INDEX_IN_RANGE, Handler.parseId(input));
+                        //requestCheck.setLogin(authorization.getLogin());
+                        String ans = client.dispatch(requestCheck);
                         if (!ans.equals("true")){
                             Respondent.sendToOutput(MessageType.OUT_OF_RANGE);
                             continue;
                         }
                     }
                     if (commandType == CommandType.UPDATE){
-                        String ans = client.dispatch(new RequestId(CommandType.CHECK_ID_EXISTS, Handler.parseId(input)));
+                        Request requestCheck = new RequestId(CommandType.CHECK_ID_EXISTS, Handler.parseId(input));
+                        requestCheck.setLogin(authorization.getLogin());
+                        String ans = client.dispatch(requestCheck);
                         if (!ans.equals("true")){
-                            Respondent.sendToOutput(MessageType.NO_SUCH_ID);
+                            Respondent.sendToOutput(ans);
                             continue;
                         }
                     }
                     if (Respondent.getInputType() == VIEW) Respondent.sendToOutput(StudyGroup.class.getSimpleName() + ":");
                     Element element = ElementBuilderHelper.buildElement(StudyGroup.class, "StudyGroup", null);
+                    ((StudyGroup) element).setUser(authorization.getLogin());
                     Respondent.sendToOutput(StudyGroup.class.getSimpleName() + " is completed.");
                     switch(commandType){
                         case UPDATE:
@@ -106,9 +124,11 @@ public class ClientController {
                     }
                     break;
                 case REMOVE_BY_ID:
-                    String ans = client.dispatch(new RequestId(CommandType.CHECK_ID_EXISTS, Handler.parseId(input)));
+                    Request requestCheck = new RequestId(CommandType.CHECK_ID_EXISTS, Handler.parseId(input));
+                    requestCheck.setLogin(authorization.getLogin());
+                    String ans = client.dispatch(requestCheck);
                     if (!ans.equals("true")){
-                        Respondent.sendToOutput(MessageType.NO_SUCH_ID);
+                        Respondent.sendToOutput(ans);
                         continue;
                     }
                     request = new RequestId(commandType, Handler.parseId(input));
@@ -120,6 +140,7 @@ public class ClientController {
                     executeScriptCommand.execute(
                         Handler.parseScriptName(input),
                         client,
+                        authorization,
                         executeScriptCommand,
                         helpCommand,
                         historyCommand
@@ -143,6 +164,7 @@ public class ClientController {
                 isContinue = false;
                 continue;
             }
+            request.setLogin(authorization.getLogin());
             Respondent.sendToOutput(client.dispatch(request));
             if (isExit) break;
             historyCommand.add(commandType);

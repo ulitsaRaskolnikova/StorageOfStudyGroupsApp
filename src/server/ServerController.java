@@ -9,15 +9,16 @@ import java.io.IOException;
 public class ServerController {
     public static void main(String[] args){
         Server server = Server.init();
-        StorageController storageController = StorageController.init();
+        var sqlController = new SQLController();
+        var storageController = StorageController.initDB(sqlController);
+        //StorageController storageController = StorageController.initXML();
         while (true) {
             try {
                 server.searchChannels(storageController);
                 break;
-            } catch (IOException e){
+            } catch (Exception e) {
                 server = Server.init();
             }
         }
-
     }
 }

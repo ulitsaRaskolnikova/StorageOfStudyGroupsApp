@@ -11,7 +11,11 @@ public class RemoveIdCommand implements Command<IRequestId> {
     }
     @Override
     public String execute(IRequestId request){
-        storage.remove(request.getId());
+        try {
+            storage.remove(request.getId(), request.getLogin());
+        } catch (Exception e){
+            return e.getMessage();
+        }
         return "The element is deleted.";
     }
 }

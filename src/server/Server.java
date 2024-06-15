@@ -2,7 +2,6 @@ package server;
 
 import commonData.requests.interfaces.Request;
 import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,12 +12,19 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
-    Selector selector;
-    ServerSocketChannel ssc;
-    ByteBuffer buffer;
+    private ServerSocketChannel ssc;
+    private static final int MAX_COUNT_OF_THREADS = 100;
+    private ExecutorService readPool;
+    private ForkJoinPool processPool;
+    private Semaphore semaphore;
+    private ByteBuffer buffer;
     @Getter
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
@@ -27,55 +33,44 @@ public class Server {
         while (true){
             try {
                 Server server = new Server();
-                server.selector = Selector.open();
                 server.ssc = ServerSocketChannel.open();
-                server.ssc.bind(new InetSocketAddress(3000));
+                server.ssc.bind(new InetSocketAddress(55555));
                 server.ssc.configureBlocking(false);
-                server.ssc.register(server.selector, SelectionKey.OP_ACCEPT);
                 server.buffer = ByteBuffer.allocate(1024 * 1024);
+                server.readPool = Executors.newFixedThreadPool(MAX_COUNT_OF_THREADS);
+                server.processPool = new ForkJoinPool();
+                server.semaphore = new Semaphore(MAX_COUNT_OF_THREADS);
                 return server;
             } catch (Exception e){
                 //ServerController.getLogger().info(e.getMessage());
                 logger.info(e.getMessage());
             }
         }
-
     }
-    public void searchChannels(StorageController storageController) throws IOException{
+    public void searchChannels(StorageController storageController) throws IOException, InterruptedException {
         while (true){
-            int select = selector.select();
-            if (select== 0) continue;
-            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-            while(iterator.hasNext()){
-                SelectionKey key = iterator.next();
+            semaphore.acquire();
+            SocketChannel accept = ssc.accept();
+            readPool.execute(() -> {
                 try {
-                    if (key.isAcceptable()) {
-                        SocketChannel channel = ssc.accept();
-                        channel.configureBlocking(false);
-                        channel.register(selector, SelectionKey.OP_READ);
-                    } else {
-                        try {
-                            Request request = getRequest(key);
-                            String ans = storageController.executeCommand(request);
-                            //System.out.println(request);
-                            //System.out.println(ans);
-                            logger.info(request.toString());
-                            logger.info(ans);
-                            sendAns(ans, key);
-                            key.channel().close();
-                            ssc.register(selector, SelectionKey.OP_ACCEPT);
-                        } catch (ClassNotFoundException e){
-                            logger.info(e.getMessage());
-                        }
-                    }
+                    Request request = getRequest(accept);
+                    System.out.println(accept);
+                    processPool.execute(() -> {
+                        System.out.println(accept);
+                        String ans = storageController.executeCommand(request);
+                        System.out.println(accept);
+                        new Thread(() -> sendAns(ans, accept)).start();
+                    });
+                } catch (Exception e) {
+                    // log
                 } finally {
-                    iterator.remove();
+                    semaphore.release();
                 }
-            }
+            });
         }
     }
-    public Request getRequest(SelectionKey key) throws IOException, ClassNotFoundException {
-        ((SocketChannel) key.channel()).read(buffer);
+    public Request getRequest(SocketChannel channel) throws IOException, ClassNotFoundException {
+        channel.read(buffer);
         buffer.flip();
         ByteArrayInputStream byteIn = new ByteArrayInputStream(buffer.array(), buffer.position(), buffer.remaining());
         ObjectInputStream objectIn = new ObjectInputStream(byteIn);
@@ -88,64 +83,19 @@ public class Server {
         buffer.clear();
         return request;
     }
-    public void sendAns(String ans, SelectionKey key){
+    public void sendAns(String ans, SocketChannel socket){
         buffer.put(ans.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
         try {
-            ((SocketChannel) key.channel()).write(buffer);
-        } catch (IOException e){
+            socket.write(buffer);
+        } catch (IOException e) {
             logger.info(e.getMessage());
         }
         buffer.clear();
-
-    }
-
-
-    public static void main(String[] args) throws Exception{
-        Selector selector = Selector.open();
-        ServerSocketChannel ssc = ServerSocketChannel.open();
-        ssc.bind(new InetSocketAddress(3000));
-        ssc.configureBlocking(false);
-        ssc.register(selector, SelectionKey.OP_ACCEPT);
-        ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
-        while (true){
-            if (selector.select() == 0) continue;
-            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-            //System.out.println(selector.selectedKeys().size());
-            while(iterator.hasNext()){
-                SelectionKey key = iterator.next();
-                try {
-                    if (key.isAcceptable()) {
-                        SocketChannel channel = ssc.accept();
-                        channel.configureBlocking(false);
-                        channel.register(selector, SelectionKey.OP_READ);
-                    } else if (key.isReadable()) {
-                        ((SocketChannel) key.channel()).read(buffer);
-//                        if (((SocketChannel) key.channel()).read(buffer) == -1){
-//                            System.out.println("-1");
-//                            key.interestOps(SelectionKey.OP_WRITE);
-//                        }
-
-                        buffer.flip();
-                        ByteArrayInputStream byteIn = new ByteArrayInputStream(buffer.array(), buffer.position(), buffer.remaining());
-                        ObjectInputStream objectIn = new ObjectInputStream(byteIn);
-                        Request request = (Request) objectIn.readObject();
-                        System.out.println(request);
-
-                        buffer.clear();
-                        //key.channel().register(selector, SelectionKey.OP_WRITE);
-                        String ans = "I LIKE SEX\n AND DRUGS";
-                        buffer.put(ans.getBytes(StandardCharsets.UTF_8));
-                        buffer.flip();
-                        System.out.println(new String(buffer.array(), buffer.position(), buffer.remaining()));
-                        ((SocketChannel) key.channel()).write(buffer);
-                        buffer.clear();
-                        key.channel().close();
-                    }
-                } finally {
-                    iterator.remove();
-                }
-            }
+        try{
+            socket.close();
+        } catch (IOException e){
+            //log
         }
     }
 }

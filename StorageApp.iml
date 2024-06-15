@@ -20,5 +20,6 @@
     </orderEntry>
     <orderEntry type="library" name="logback-classic-1.5.6" level="application" />
     <orderEntry type="library" name="logback-core-1.5.6" level="application" />
+    <orderEntry type="library" name="postgresql-42.7.3" level="application" />
   </component>
 </module>

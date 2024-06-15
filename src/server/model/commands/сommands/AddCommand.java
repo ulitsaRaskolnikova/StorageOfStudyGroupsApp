@@ -11,7 +11,11 @@ public class AddCommand implements Command<IRequestElement> {
     }
     @Override
     public String execute(IRequestElement request){
-        storage.add(request.getElement());
+        try {
+            storage.add(request.getElement());
+        } catch (Exception e){
+            return e.getMessage();
+        }
         return "The element is added.";
     }
 }

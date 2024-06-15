@@ -1,5 +1,6 @@
 package commonData.modelHandlers;
 
+import commonData.enums.AuthorizationType;
 import commonData.data.validation.*;
 import commonData.commandData.CommandType;
 import commonData.data.enums.FormOfEducation;
@@ -20,7 +21,7 @@ public class Handler {
             switch (commandType){
                 case INSERT_AT: return sep.length == 2 && isIndex(sep[1].strip());
                 case UPDATE, REMOVE_BY_ID: return sep.length == 2 && isId(sep[1].strip());
-                case REMOVE_ANY_BY_FORM_OF_EDUCATION: return sep.length == 2 && isFormOfEducation(sep[1].strip());
+                case REMOVE_ANY_BY_FORM_OF_EDUCATION: return sep.length == 2 && isFormOfEducation(sep[1].strip().toUpperCase());
                 case EXECUTE_SCRIPT: return sep.length == 2 && isScriptName(sep[1].strip());
             }
             if (sep.length == 1) return true;
@@ -41,7 +42,7 @@ public class Handler {
     }
     public static FormOfEducation parseFormOfEducation(String input){
         String[] sep = input.strip().split("\s+", 2);
-        return FormOfEducation.valueOf(sep[1].strip());
+        return FormOfEducation.valueOf(sep[1].strip().toUpperCase());
     }
     public static CommandType parseCommandType(String input){
         String[] sep = input.strip().split("\s+", 2);
@@ -74,7 +75,7 @@ public class Handler {
                         (input.length() == maxLongLen && input.compareTo(maxLongStr) <= 0));
     }
     public static boolean isFormOfEducation(String input){
-        return Arrays.stream(FormOfEducation.values()).anyMatch(element -> Objects.equals(input.strip(), element.toString()));
+        return Arrays.stream(FormOfEducation.values()).anyMatch(element -> Objects.equals(input.strip().toUpperCase(), element.toString()));
     }
     public static boolean isCoordinatesX(String input){
         return isInteger(input) && Integer.parseInt(input) <= 724;

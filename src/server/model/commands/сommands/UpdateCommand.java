@@ -12,7 +12,11 @@ public class UpdateCommand implements Command<IRequestIdElement> {
     @Override
     public String execute(IRequestIdElement request){
         request.getElement().setId(request.getId());
-        storage.update(request.getId(), request.getElement());
+        try {
+            storage.update(request.getId(), request.getElement(), request.getLogin());
+        } catch(Exception e){
+            return e.getMessage();
+        }
         return "The element is updated.\n";
     }
 }

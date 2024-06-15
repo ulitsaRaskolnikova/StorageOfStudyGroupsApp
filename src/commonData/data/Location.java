@@ -28,6 +28,12 @@ public class Location implements XMLString, Serializable {
     @InputField
     @Max(value = 454)
     private String name; //Длина строки не должна быть больше 454, Поле может быть null
+    public Location(){}
+    public Location(long x, Integer y, Integer z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
     @Override
     public String toXMLString(){
         return "<location>" +
